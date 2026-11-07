@@ -1,0 +1,5 @@
+[functions.study-ai]
+verify_jwt = true
+
+[functions.guest-cleanup]
+verify_jwt = true

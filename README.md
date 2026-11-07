@@ -32,7 +32,7 @@ Plataforma de estudos com flashcards, repetição espaçada e apoio de inteligê
 - `supabase/functions/`: funções Edge de IA e limpeza de sessões visitantes.
 - `tests/`: testes automatizados do agendamento.
 - `ATIVAR-IA.md`, `ATIVAR-VISITANTE.md`, `ATUALIZAR-PERFORMANCE.md`: guias operacionais.
-- `source/memora-source-v7.zip`: pacote completo do código-fonte desta publicação.
+- `source/memora-frontend-source.zip`: pacote completo do código-fonte desta publicação.
 
 ## Configuração antes de executar
 

@@ -6,33 +6,71 @@ Plataforma de estudos com flashcards, repetição espaçada e apoio de inteligê
 
 ## Funcionalidades
 
-- Autenticação de usuários com Supabase Auth.
+- Login, cadastro e sessões anônimas com Supabase Auth.
 - Organização em pastas, decks e cartões.
 - Cartões discursivos e de múltipla escolha.
-- Revisão imediata na criação; após a primeira revisão, intervalos de 24 horas, 7, 15, 30, 60 e 120 dias.
-- Histórico de revisões e estado atual separados no PostgreSQL.
-- Reformulação de enunciados e avaliação de respostas discursivas com Gemini por Supabase Edge Function.
-- Área administrativa e configurações globais restritas.
-- Modo visitante com autenticação anônima e limpeza por expiração.
-- Interface responsiva hospedável no Cloudflare Pages.
+- Primeira revisão disponível imediatamente após a criação; após a primeira revisão, intervalos de 24 horas, 7, 15, 30, 60 e 120 dias.
+- Estado atual e histórico de revisões separados no PostgreSQL.
+- Reformulação de enunciados e avaliação discursiva com Gemini por Supabase Edge Function.
+- Área administrativa restrita, com autorização verificada também no PostgreSQL.
+- Modo visitante temporário com expiração e rotina de limpeza.
+- Interface responsiva para Cloudflare Pages.
 
 ## Tecnologias
 
-- HTML, CSS e JavaScript
-- Supabase (PostgreSQL, Auth, Row Level Security e Edge Functions)
+- HTML, CSS e JavaScript (ES modules)
+- Supabase: PostgreSQL, Auth, Row Level Security e Edge Functions
 - Google Gemini API
 - Cloudflare Pages
 - Supabase CLI
 
-## Estrutura do projeto
+## Estrutura
 
-A estrutura de aplicação, migrations, funções Edge e testes está incluída no pacote de código-fonte disponibilizado na seção de Releases/arquivos do repositório. Os arquivos SQL são aplicados no projeto Supabase; as chaves secretas permanecem somente nos Secrets do Supabase.
+- `index.html`, `app.js`, `styles.css`: aplicação web.
+- `supabase/schema.sql`: esquema inicial do banco.
+- `supabase/migrations/`: alterações incrementais do banco.
+- `supabase/functions/`: funções Edge de IA e limpeza de sessões visitantes.
+- `tests/`: testes automatizados do agendamento.
+- `ATIVAR-IA.md`, `ATIVAR-VISITANTE.md`, `ATUALIZAR-PERFORMANCE.md`: guias operacionais.
+- `source/memora-source-v7.zip`: pacote completo do código-fonte desta publicação.
 
-## Regras de revisão
+## Configuração antes de executar
 
-| Momento | Próxima revisão |
+Este repositório é um template público. Antes de publicar sua própria instância, substitua os marcadores de configuração:
+
+- `YOUR_PROJECT_REF` pela referência do projeto Supabase.
+- `YOUR_SUPABASE_PUBLISHABLE_KEY` pela Publishable Key do Supabase.
+- `YOUR_ADMIN_EMAIL@example.com` pelo e-mail administrativo que você controla.
+
+Esses marcadores aparecem no frontend e nos scripts SQL de instalação/migração. Não substitua-os por uma Secret Key ou service role key. A Publishable Key é pública; as políticas RLS são a principal barreira de segurança dos dados.
+
+### Banco de dados
+
+1. Crie um projeto Supabase.
+2. No SQL Editor, execute `supabase/schema.sql`.
+3. Configure Email Auth.
+4. Para visitantes, habilite Anonymous Sign-Ins e aplique `supabase/migrations/20261106_guest_sessions_and_cleanup.sql`.
+5. Aplique `supabase/migrations/20261106_review_sequence_admin_and_duplicate_decks.sql` quando indicado pelo fluxo de atualização.
+6. Revise todas as políticas RLS antes de permitir cadastro público.
+
+### IA
+
+1. Gere uma chave no Google AI Studio.
+2. Cadastre-a no Supabase como secret `GEMINI_API_KEY`.
+3. Publique `supabase/functions/study-ai` com a Supabase CLI.
+4. Nunca coloque a chave Gemini no frontend ou neste repositório.
+
+Consulte `ATIVAR-IA.md` e `ATUALIZAR-PERFORMANCE.md`.
+
+### Hospedagem
+
+Publique `index.html`, `app.js` e `styles.css` no Cloudflare Pages. Não há etapa de build para o frontend estático.
+
+## Regra de repetição espaçada
+
+| Etapa | Próximo intervalo |
 |---|---:|
-| Cartão recém-criado | Imediatamente |
+| Cartão criado | Imediatamente disponível |
 | Após a 1ª revisão | 24 horas |
 | Após a 2ª revisão | 7 dias |
 | Após a 3ª revisão | 15 dias |
@@ -40,34 +78,24 @@ A estrutura de aplicação, migrations, funções Edge e testes está incluída 
 | Após a 5ª revisão | 60 dias |
 | Após a 6ª e seguintes | 120 dias |
 
-O cálculo parte do instante real em que a revisão foi concluída. A nota não altera o intervalo. O nível vai de 0 a 6 e o contador de revisões continua crescendo.
+O cálculo parte do instante efetivo da revisão. A nota não altera a progressão; o nível vai até 6 e o contador de revisões continua aumentando.
 
-## Configuração local
+## Testes
 
-1. Clone o repositório.
-2. Configure um projeto Supabase.
-3. Aplique o schema inicial e as migrations em ordem.
-4. Habilite Email Auth e, caso use o modo visitante, Anonymous Sign-Ins.
-5. Configure `GEMINI_API_KEY` como secret no Supabase — nunca no frontend.
-6. Publique as funções Edge necessárias com a Supabase CLI.
-7. Publique os arquivos estáticos no Cloudflare Pages.
+Com Node.js instalado:
 
-Consulte os documentos de configuração incluídos no projeto. Nunca publique `.env`, tokens de acesso, a chave Secret/service_role do Supabase ou a chave Gemini.
+```bash
+node tests/scheduler.test.mjs
+```
 
-## Segurança
+## Segurança e dados pessoais
 
-- O frontend usa apenas a Publishable Key do Supabase, que é uma chave pública.
-- As tabelas devem manter Row Level Security (RLS) habilitado.
-- Operações administrativas devem ser autorizadas no banco/backend, não apenas ocultadas na interface.
-- A chave Gemini deve ficar nos Secrets da função Edge.
-- Visitantes usam identidades anônimas isoladas e têm limpeza temporária configurada no banco.
+- Nunca publique `.env`, tokens, `GEMINI_API_KEY`, Secret Key ou service role key.
+- `YOUR_ADMIN_EMAIL@example.com` é um marcador: troque-o pelo e-mail que deverá ser administrador, inclusive nos scripts SQL relacionados à autorização.
+- A Publishable Key e a URL do projeto são configuração pública, mas o projeto Supabase deve ter RLS corretamente configurado.
+- Não inclua backups de banco de dados nem dados reais de usuários no repositório.
+- Revise as políticas RLS, limites dos planos gratuitos, retenção de dados e backups antes de abrir a aplicação a outras pessoas.
 
-Antes de abrir o projeto a novos usuários, revise as políticas RLS, os limites de uso dos serviços gratuitos e os procedimentos de backup.
+## Estado
 
-## Estado do projeto
-
-Projeto pessoal em evolução. Algumas experiências podem depender da configuração dos serviços externos e dos limites dos respectivos planos gratuitos. Avaliações locais de fallback não equivalem a uma avaliação feita pelo Gemini.
-
-## Licença
-
-MIT — consulte o arquivo LICENSE.
+Projeto pessoal em evolução. O modo sem a função Gemini pode utilizar avaliação local demonstrativa, que não equivale à análise por IA. Os recursos externos dependem da configuração e dos limites dos respectivos serviços.

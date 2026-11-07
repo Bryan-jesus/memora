@@ -26,7 +26,7 @@ Plataforma de estudos com flashcards, repetição espaçada e apoio de inteligê
 
 ## Estrutura
 
-- `index.html`, `app.js`, `styles.css`: aplicação web.
+- `source/memora-frontend-source.zip`: snapshot com os três arquivos do frontend (`index.html`, `app.js`, `styles.css`); extraia os três na raiz de uma pasta para executar o frontend estático.
 - `supabase/schema.sql`: esquema inicial do banco.
 - `supabase/migrations/`: alterações incrementais do banco.
 - `supabase/functions/`: funções Edge de IA e limpeza de sessões visitantes.
@@ -64,7 +64,7 @@ Consulte `ATIVAR-IA.md` e `ATUALIZAR-PERFORMANCE.md`.
 
 ### Hospedagem
 
-Publique `index.html`, `app.js` e `styles.css` no Cloudflare Pages. Não há etapa de build para o frontend estático.
+Extraia `source/memora-frontend-source.zip` em uma pasta, preservando `index.html`, `app.js` e `styles.css` lado a lado. Publique o conteúdo extraído no Cloudflare Pages. Não há etapa de build para o frontend estático.
 
 ## Regra de repetição espaçada
 
